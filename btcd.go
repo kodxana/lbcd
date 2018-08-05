@@ -16,9 +16,9 @@ import (
 	"runtime/pprof"
 
 	"github.com/btcsuite/btcd/blockchain/indexers"
+	"github.com/btcsuite/btcd/claimtrie/param"
 	"github.com/btcsuite/btcd/database"
 	"github.com/btcsuite/btcd/limits"
-	"github.com/btcsuite/btcd/ossec"
 
 	"github.com/felixge/fgprof"
 )
@@ -167,15 +167,7 @@ func btcdMain(serverChan chan<- *server) error {
 		return nil
 	}
 
-	// The config file is already created if it did not exist and the log
-	// file has already been opened by now so we only need to allow
-	// creating rpc cert and key files if they don't exist.
-	unveilx(cfg.RPCKey, "rwc")
-	unveilx(cfg.RPCCert, "rwc")
-	unveilx(cfg.DataDir, "rwc")
-
-	// drop unveil and tty
-	pledgex("stdio rpath wpath cpath flock dns inet")
+	param.SetNetwork(activeNetParams.Params.Net) // prep the claimtrie params
 
 	go logMemoryUsage()
 
@@ -193,6 +185,10 @@ func btcdMain(serverChan chan<- *server) error {
 		server.Stop()
 		server.WaitForShutdown()
 		srvrLog.Infof("Server shutdown complete")
+		// TODO: tie into the sync manager for shutdown instead
+		if ct := server.chain.ClaimTrie(); ct != nil {
+			ct.Close()
+		}
 	}()
 	server.Start()
 	if serverChan != nil {
@@ -331,35 +327,12 @@ func loadBlockDB() (database.DB, error) {
 	return db, nil
 }
 
-func unveilx(path string, perms string) {
-	err := ossec.Unveil(path, perms)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "unveil failed: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func pledgex(promises string) {
-	err := ossec.PledgePromises(promises)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "pledge failed: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func init() {
-	pledgex("unveil stdio id rpath wpath cpath flock dns inet tty")
-}
-
 func main() {
-	// If GOGC is not explicitly set, override GC percent.
-	if os.Getenv("GOGC") == "" {
-		// Block and transaction processing can cause bursty allocations.  This
-		// limits the garbage collector from excessively overallocating during
-		// bursts.  This value was arrived at with the help of profiling live
-		// usage.
-		debug.SetGCPercent(10)
-	}
+	// Block and transaction processing can cause bursty allocations.  This
+	// limits the garbage collector from excessively overallocating during
+	// bursts.  This value was arrived at with the help of profiling live
+	// usage.
+	debug.SetGCPercent(10)
 
 	// Up some limits.
 	if err := limits.SetLimits(); err != nil {
