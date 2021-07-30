@@ -1814,6 +1814,7 @@ func (state *gbtWorkState) blockTemplateResult(useCoinbaseValue bool, submitOld 
 	// data, then include the witness commitment in the GBT result.
 	if template.WitnessCommitment != nil {
 		reply.DefaultWitnessCommitment = hex.EncodeToString(template.WitnessCommitment)
+		reply.Rules = append(reply.Rules, "!segwit")
 	}
 
 	if useCoinbaseValue {
