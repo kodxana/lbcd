@@ -1294,9 +1294,16 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 			break
 		}
 	}
+
+	e := wire.BaseEncoding
+	// we think that the iv.Type set above is sufficient. If not:
+	// if peer.IsWitnessEnabled() {
+	//	e = wire.WitnessEncoding
+	//}
+
 	state.requestQueue = requestQueue
 	if len(gdmsg.InvList) > 0 {
-		peer.QueueMessage(gdmsg, nil)
+		peer.QueueMessageWithEncoding(gdmsg, nil, e)
 	}
 }
 
