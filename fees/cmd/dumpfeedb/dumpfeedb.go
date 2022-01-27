@@ -12,8 +12,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/decred/dcrd/dcrutil/v4"
-	"github.com/decred/dcrd/internal/fees"
+	"github.com/btcsuite/btcd/btcutil"
+	"github.com/btcsuite/btcd/fees"
+	"github.com/btcsuite/btclog"
 	flags "github.com/jessevdk/go-flags"
 )
 
@@ -21,11 +22,14 @@ type config struct {
 	DB string `short:"b" long:"db" description:"Path to fee database"`
 }
 
+var feesLog = btclog.NewBackend(os.Stdout).Logger("FEES")
+
 func main() {
 	cfg := config{
-		DB: path.Join(dcrutil.AppDataDir("dcrd", false), "data", "mainnet", "feesdb"),
+		DB: path.Join(btcutil.AppDataDir("lbcd", false), "data", "mainnet", "feesdb"),
 	}
 
+	fees.UseLogger(feesLog)
 	parser := flags.NewParser(&cfg, flags.Default)
 	_, err := parser.Parse()
 	if err != nil {
