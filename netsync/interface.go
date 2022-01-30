@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcd/blockchain"
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/fees"
 	"github.com/btcsuite/btcd/mempool"
 	"github.com/btcsuite/btcd/peer"
 	"github.com/btcsuite/btcd/wire"
@@ -37,5 +38,5 @@ type Config struct {
 	DisableCheckpoints bool
 	MaxPeers           int
 
-	FeeEstimator *mempool.FeeEstimator
+	FeeEstimator *fees.Estimator
 }

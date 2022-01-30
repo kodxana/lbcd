@@ -35,6 +35,7 @@ import (
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/database"
+	"github.com/btcsuite/btcd/fees"
 	"github.com/btcsuite/btcd/mempool"
 	"github.com/btcsuite/btcd/mining"
 	"github.com/btcsuite/btcd/mining/cpuminer"
@@ -873,7 +874,7 @@ func handleEstimateFee(s *rpcServer, cmd interface{}, closeChan <-chan struct{})
 		return -1.0, errors.New("Parameter NumBlocks must be positive")
 	}
 
-	feeRate, err := s.cfg.FeeEstimator.EstimateFee(uint32(c.NumBlocks))
+	feeRate, err := s.cfg.FeeEstimator.EstimateFee(int32(c.NumBlocks))
 
 	if err != nil {
 		return -1.0, err
@@ -883,7 +884,38 @@ func handleEstimateFee(s *rpcServer, cmd interface{}, closeChan <-chan struct{})
 	return float64(feeRate), nil
 }
 
-// handleGenerate handles generate commands.
+// handleEstimateSmartFee implements the estimatesmartfee command.
+//
+// The default estimation mode when unset is assumed as "conservative". As of
+// 2018-12, the only supported mode is "conservative".
+func handleEstimateSmartFee(s *rpcServer, cmd interface{}, closeChan <-chan struct{}) (interface{}, error) {
+	c := cmd.(*btcjson.EstimateSmartFeeCmd)
+
+	mode := btcjson.EstimateModeConservative
+	if c.EstimateMode != nil {
+		mode = *c.EstimateMode
+	}
+
+	if mode != btcjson.EstimateModeConservative {
+		return nil, &btcjson.RPCError{
+			Code: btcjson.ErrRPCInvalidParameter,
+			Message: "Only the default and conservative modes " +
+				"are supported for smart fee estimation at the moment",
+		}
+	}
+
+	fee, err := s.cfg.FeeEstimator.EstimateFee(int32(c.ConfTarget))
+	if err != nil {
+		return nil, internalRPCError(err.Error(), "Could not estimate fee")
+	}
+
+	feeRate := float64(fee) / btcutil.SatoshiPerBitcoin
+	return &btcjson.EstimateSmartFeeResult{
+		FeeRate: &feeRate,
+		Blocks:  c.ConfTarget,
+	}, nil
+}
+
 func handleGenerate(s *rpcServer, cmd interface{}, closeChan <-chan struct{}) (interface{}, error) {
 	// Respond with an error if there are no addresses to pay the
 	// created blocks to.
@@ -3829,6 +3861,7 @@ type rpcServer struct {
 	gbtWorkState           *gbtWorkState
 	helpCacher             *helpCacher
 	requestProcessShutdown chan struct{}
+	feeEstimator           *fees.Estimator
 	quit                   chan int
 }
 
@@ -4659,7 +4692,10 @@ type rpcserverConfig struct {
 
 	// The fee estimator keeps track of how long transactions are left in
 	// the mempool before they are mined into blocks.
-	FeeEstimator *mempool.FeeEstimator
+	FeeEstimator *fees.Estimator
+
+	// Services represents the services supported by this node.
+	Services wire.ServiceFlag
 }
 
 // newRPCServer returns a new instance of the rpcServer struct.
@@ -4670,6 +4706,7 @@ func newRPCServer(config *rpcserverConfig) (*rpcServer, error) {
 		gbtWorkState:           newGbtWorkState(config.TimeSource),
 		helpCacher:             newHelpCacher(),
 		requestProcessShutdown: make(chan struct{}),
+		feeEstimator:           config.FeeEstimator,
 		quit:                   make(chan int),
 	}
 	if cfg.RPCUser != "" && cfg.RPCPass != "" {
