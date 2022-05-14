@@ -2,7 +2,6 @@ package node
 
 import (
 	"container/list"
-	"sync"
 
 	"github.com/lbryio/lbcd/claimtrie/change"
 )
@@ -17,15 +16,11 @@ type cacheLeaf struct {
 type Cache struct {
 	nodes map[string]*cacheLeaf
 	order *list.List
-	mtx   sync.Mutex
 	limit int
 }
 
 func (nc *Cache) insert(name []byte, n *Node, height int32) {
 	key := string(name)
-
-	nc.mtx.Lock()
-	defer nc.mtx.Unlock()
 
 	existing := nc.nodes[key]
 	if existing != nil {
@@ -49,9 +44,6 @@ func (nc *Cache) insert(name []byte, n *Node, height int32) {
 func (nc *Cache) fetch(name []byte, height int32) (*Node, []change.Change, int32) {
 	key := string(name)
 
-	nc.mtx.Lock()
-	defer nc.mtx.Unlock()
-
 	existing := nc.nodes[key]
 	if existing != nil && existing.height <= height {
 		nc.order.MoveToFront(existing.element)
@@ -61,9 +53,6 @@ func (nc *Cache) fetch(name []byte, height int32) (*Node, []change.Change, int32
 }
 
 func (nc *Cache) addChanges(changes []change.Change, height int32) {
-	nc.mtx.Lock()
-	defer nc.mtx.Unlock()
-
 	for _, c := range changes {
 		key := string(c.Name)
 		existing := nc.nodes[key]
@@ -74,9 +63,6 @@ func (nc *Cache) addChanges(changes []change.Change, height int32) {
 }
 
 func (nc *Cache) drop(names [][]byte) {
-	nc.mtx.Lock()
-	defer nc.mtx.Unlock()
-
 	for _, name := range names {
 		key := string(name)
 		existing := nc.nodes[key]
@@ -89,8 +75,6 @@ func (nc *Cache) drop(names [][]byte) {
 }
 
 func (nc *Cache) clear() {
-	nc.mtx.Lock()
-	defer nc.mtx.Unlock()
 	nc.nodes = map[string]*cacheLeaf{}
 	nc.order = list.New()
 	// we'll let the GC sort out the remains...

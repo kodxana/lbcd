@@ -67,14 +67,16 @@ func (nm *BaseManager) NodeAt(height int32, name []byte) (*Node, error) {
 			return nil, errors.Wrap(err, "in new node")
 		}
 		// TODO: how can we tell what needs to be cached?
-		if nm.tempChanges == nil && height == nm.height && n != nil && (len(changes) > 7 || len(name) < 12) {
+		if nm.tempChanges == nil && height == nm.height && n != nil && (len(changes) > 4 || len(name) < 12) {
 			nm.cache.insert(name, n, height)
 		}
 	} else {
 		if nm.tempChanges != nil { // making an assumption that we only ever have tempChanges for a single block
 			changes = append(changes, nm.tempChanges[string(name)]...)
+			n = n.Clone()
+		} else if height != nm.height {
+			n = n.Clone()
 		}
-		n = n.Clone()
 		updated, err := nm.updateFromChanges(n, changes, height)
 		if err != nil {
 			return nil, errors.Wrap(err, "in update from changes")
@@ -82,7 +84,7 @@ func (nm *BaseManager) NodeAt(height int32, name []byte) (*Node, error) {
 		if !updated {
 			n.AdjustTo(oldHeight, height, name)
 		}
-		if nm.tempChanges == nil && height == nm.height { // TODO: how many changes before we update the cache?
+		if nm.tempChanges == nil && height == nm.height {
 			nm.cache.insert(name, n, height)
 		}
 	}
