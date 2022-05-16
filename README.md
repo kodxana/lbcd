@@ -68,7 +68,7 @@ By default, data and logs are stored in `<LBCDDIR>`:
 To enable RPC access a username and password is required. Example:
 
 ``` sh
-./lbcd --txindex --rpcuser=rpcuser --rpcpass=rpcpass
+./lbcd --rpcuser=rpcuser --rpcpass=rpcpass
 ```
 
 Interact with lbcd via RPC using `lbcctl`
@@ -84,7 +84,7 @@ By default, the RPCs are served over TLS. `lbcd` generates (if not exists) `rpc.
 The RPCs can also be served without TLS *(on localhost only)* using (`--notls`)
 
 ``` sh
-./lbcd --txindex --rpcuser=rpcuser --rpcpass=rpcpass --notls
+./lbcd --rpcuser=rpcuser --rpcpass=rpcpass --notls
 ./lbcctl --rpcuser=rpcuser --rpcpass=rpcpass --notls getblockcount
 ```
 
@@ -101,7 +101,7 @@ By default, `lbcd` and `lbcctl` use the following ports for different networks r
 Running `lbcd` and `lbcctl` with `--testnet` or `--regtest` would use different chain params as well as default RPC and Network ports.
 
 ``` sh
-./lbcd --txindex --rpcuser=rpcuser --rpcpass=rpcpass --regtest
+./lbcd --rpcuser=rpcuser --rpcpass=rpcpass --regtest
 ./lbcctl --rpcuser=rpcuser --rpcpass=rpcpass --regtest getblockcount
 ```
 
@@ -109,7 +109,7 @@ The default Network and RPC ports of `lbcd` can be overriden using `--listen` an
 `lbcctl` can also connect to RPC server specified by `--rpcserver`
 
 ``` sh
-./lbcd --txindex --rpcuser=rpcuser --rpcpass=rpcpass --regtest --listen=127.0.0.1:29248 --rpclisten=127.0.0.1:29247
+./lbcd --rpcuser=rpcuser --rpcpass=rpcpass --regtest --listen=127.0.0.1:29248 --rpclisten=127.0.0.1:29247
 ./lbcctl --rpcuser=rpcuser --rpcpass=rpcpass --regtest --rpcserver=127.0.0.1:29247 getblockcount
 ```
 

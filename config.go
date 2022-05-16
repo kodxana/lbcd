@@ -65,7 +65,7 @@ const (
 	defaultMaxOrphanTxSize       = 100000
 	defaultSigCacheMaxSize       = 100000
 	sampleConfigFilename         = "sample-lbcd.conf"
-	defaultTxIndex               = false
+	defaultTxIndex               = true
 	defaultAddrIndex             = false
 )
 
