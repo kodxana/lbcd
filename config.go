@@ -63,8 +63,8 @@ const (
 	defaultMaxOrphanTransactions = 100
 	defaultMaxOrphanTxSize       = 100000
 	defaultSigCacheMaxSize       = 100000
-	sampleConfigFilename         = "sample-btcd.conf"
-	defaultTxIndex               = false
+	sampleConfigFilename         = "sample-lbcd.conf"
+	defaultTxIndex               = true
 	defaultAddrIndex             = false
 	defaultUpnp                  = true
 )
