@@ -30,6 +30,7 @@ import (
 	_ "github.com/btcsuite/btcd/database/ffldb"
 	"github.com/btcsuite/btcd/mempool"
 	"github.com/btcsuite/btcd/peer"
+	"github.com/btcsuite/btcd/version"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcd/btcutil"
 	"github.com/btcsuite/go-socks/socks"
@@ -470,7 +471,7 @@ func loadConfig() (*config, []string, error) {
 	appName = strings.TrimSuffix(appName, filepath.Ext(appName))
 	usageMessage := fmt.Sprintf("Use %s -h to show usage", appName)
 	if preCfg.ShowVersion {
-		fmt.Println(appName, "version", version())
+		fmt.Println(appName, "version", version.Full())
 		os.Exit(0)
 	}
 

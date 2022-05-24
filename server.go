@@ -41,6 +41,7 @@ import (
 	"github.com/btcsuite/btcd/netsync"
 	"github.com/btcsuite/btcd/peer"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/btcsuite/btcd/version"
 	"github.com/btcsuite/btcd/wire"
 	"github.com/decred/dcrd/lru"
 )
@@ -71,7 +72,7 @@ var (
 
 	// userAgentVersion is the user agent version and is used to help
 	// identify ourselves to other bitcoin peers.
-	userAgentVersion = fmt.Sprintf("%d.%d.%d", appMajor, appMinor, appPatch)
+	userAgentVersion = version.Full()
 )
 
 // zeroHash is the zero value hash (all zeros).  It is defined as a convenience.

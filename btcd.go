@@ -19,6 +19,7 @@ import (
 	"github.com/btcsuite/btcd/claimtrie/param"
 	"github.com/btcsuite/btcd/database"
 	"github.com/btcsuite/btcd/limits"
+	"github.com/btcsuite/btcd/version"
 
 	"github.com/felixge/fgprof"
 )
@@ -64,7 +65,7 @@ func btcdMain(serverChan chan<- *server) error {
 	defer btcdLog.Info("Shutdown complete")
 
 	// Show version at startup.
-	btcdLog.Infof("Version %s", version())
+	btcdLog.Infof("Version %s", version.Full())
 
 	// Enable http profiling server if requested.
 	if cfg.Profile != "" {
